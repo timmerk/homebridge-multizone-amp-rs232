@@ -16,7 +16,7 @@ export class ZoneAccessory implements AccessoryPlugin {
 
     private on = false;
     private readonly zone: number;
-    private volume = 0;
+    private volume = 50;
     private source = 0;
     private sources: String[];
 
@@ -45,6 +45,7 @@ export class ZoneAccessory implements AccessoryPlugin {
             .on(CharacteristicEventTypes.SET, (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
                 this.on = value as boolean;
                 ampControl.setZone(this.zone, this.on);
+                ampControl.setVolume(this.zone, this.volume);
                 log.info("Switch state was set to: " + (this.on ? "ON" : "OFF"));
                 callback();
             });

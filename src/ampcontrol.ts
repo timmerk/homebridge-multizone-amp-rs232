@@ -1,12 +1,41 @@
 import {Logging} from "homebridge";
+import * as net from 'net';
+import * as sleep from 'sleep';
+
+const serverPort = 4999;
+
+/*
+    Command details from https://downloads.monoprice.com/files/manuals/10761_Manual_131209.pdf
+        Control request format: <xxPPuu'CR'
+        Control response format: >xxPPuu'CR'
+        xx 10-30, eg 12 is Zone 2 of Unit 1, 10 is ALL Unit 1
+        PP command from this list
+            PR: Power PR00-PR01 off/on
+            MU: Mute MU00-MU01 off/on
+            DT: DND DT0-DT01 off/on
+            VO: Volume VO00-VO38
+            TR: Treble TR00-TR14
+            BS: Bass BS00-BS14
+            BL: Balance BL00-BL20
+            CH: zone source
+
+        Inquiry request format: ?xx'CR'
+        Inquiry response format: ?xxaabbccddeeffgghhiijj'CR'
+
+ */
 
 export class AmpControl {
-    private readonly itachFlexIp: String;
+    private readonly itachFlexIp: string;
     private log: Logging;
+    private serverController: net.Socket;
 
-    constructor(itachFlexIp: String, log: Logging) {
+    constructor(itachFlexIp: string, log: Logging) {
         this.itachFlexIp = itachFlexIp;
         this.log = log;
+        this.serverController = new net.Socket();
+        this.serverController.setEncoding("ascii");
+        this.serverController.on('data', this.serverControllerDataCallback.bind(this));
+        this.establishConnection();
     }
 
     /**
@@ -51,11 +80,11 @@ export class AmpControl {
         return cmd;
     }
 
-    getCommandStr(zone: String, command: String, value: String): String {
+    getCommandStr(zone: string, command: string, value: string): string {
         return '<' + zone + command + value;
     }
 
-    getZoneMapping(zoneNumber: number): String {
+    getZoneMapping(zoneNumber: number): string {
         //1-6 map to 11-16, 7-12 map to 21-26 and 13-18 map to 31-36
         if (zoneNumber <= 6) {
             return "1" + zoneNumber.toString();
@@ -67,25 +96,43 @@ export class AmpControl {
 
     //todo implement get current state
 
-    sendCommandToAmp(cmd: String) {
-        const axios = require('axios');
-        const url = 'http://' + this.itachFlexIp + '/api/host/modules/1/ports/1/data' + "";
-        this.log.debug("using url " + url)
-        axios.post(url, {
-
-            headers: {
-                'Content-Type': 'application/json',
-                'Content-Length': cmd.length
-            },
-            data: cmd
-        })
-            .then(function (response: any) {
-                console.log(response);
-            })
-            .catch(function (error: any) {
-                console.error(error);
-            });
+    sendCommandToAmp(cmd: string) {
+        this.viaSocket(cmd);
     }
 
+    viaSocket(cmd: string) {
+        this.log.info("writing message to controller: " + cmd);
+        this.serverController.write(cmd + '\r', "ascii");
+    }
+
+    // viaHttp(cmd: String) {
+    //     const axios = require('axios');
+    //     const url = 'http://' + this.itachFlexIp + '/api/host/modules/1/ports/1/data' + "";
+    //     this.log.debug("using url " + url)
+    //     axios.post(url, {
+    //
+    //         headers: {
+    //             'Content-Type': 'application/json',
+    //             'Content-Length': cmd.length
+    //         },
+    //         data: cmd
+    //     })
+    //         .then(function (response: any) {
+    //             console.log(response);
+    //         })
+    //         .catch(function (error: any) {
+    //             console.error(error);
+    //         });
+    // }
+
+    serverControllerDataCallback(data: Buffer) {
+        this.log.info(data.toString());
+        // this.serverController.end();
+    }
+
+    private establishConnection() {
+        this.log.info("connecting to controller");
+        this.serverController.connect({host: this.itachFlexIp, port: serverPort});
+    }
 }
 
