@@ -1,4 +1,4 @@
-##Homebridge plugin for the Monoprice 6 Zone Home Audio Multizone Controller
+## Homebridge plugin for the Monoprice 6 Zone Home Audio Multizone Controller
 
 Copyright © 2021 Richard Pack. All rights reserved.
 
