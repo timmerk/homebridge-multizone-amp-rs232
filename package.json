@@ -3,6 +3,8 @@
   "displayName": "Monoprice Multizone Amplifier",
   "version": "1.0.0",
   "description": "",
+  "author": "Richard Pack",
+  "license": "Apache 2.0",
   "main": "dist/homebridge-monoprice-amp-static.js",
   "scripts": {
     "clean": "rimraf ./dist",
@@ -11,8 +13,6 @@
     "postpublish": "npm run clean",
     "test": "jest"
   },
-  "license": "ISC",
-  "author": "Richard Pack",
   "engines": {
     "homebridge": ">=1.0.0"
   },
@@ -38,10 +38,8 @@
     "jest": "^27.0.6",
     "rimraf": "^3.0.2",
     "ts-jest": "^27.0.4",
-    "typescript": "^4.3.5",
-    "@types/sleep": "^0.0.8"
+    "typescript": "^4.3.5"
   },
   "dependencies": {
-    "sleep": "^6.3.0"
   }
 }
