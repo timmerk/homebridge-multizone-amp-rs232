@@ -27,7 +27,7 @@ class MonopriceAmpPlatform implements StaticPlatformPlugin {
 
         if (config['itachFlexIp'] === undefined) log.error("missing config value 'itachFlexIp'")
         this.ampControl = new AmpControl(config['itachFlexIp'], this.log);
-        log.info(PLATFORM_NAME + " finished initializing!");
+        this.log.info(PLATFORM_NAME + " finished initializing!");
     }
 
     accessories(callback: (foundAccessories: AccessoryPlugin[]) => void): void {

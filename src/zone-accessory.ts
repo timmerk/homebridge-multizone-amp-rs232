@@ -66,7 +66,7 @@ export class ZoneAccessory implements AccessoryPlugin {
             .setCharacteristic(hap.Characteristic.Manufacturer, "Monoprice")
             .setCharacteristic(hap.Characteristic.Model, "6 Channel Amp");
 
-        log.info("Zone accessory created", name);
+        this.log.info("Zone accessory created", name);
     }
 
     /*

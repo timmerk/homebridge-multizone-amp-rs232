@@ -1,6 +1,5 @@
 import {Logging} from "homebridge";
 import * as net from 'net';
-import * as sleep from 'sleep';
 
 const serverPort = 4999;
 
