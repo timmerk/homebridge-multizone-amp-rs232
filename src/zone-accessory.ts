@@ -82,6 +82,17 @@ export class ZoneAccessory implements AccessoryPlugin {
                 log.info("mute was set to " + this.mute + ", volume set to: " + this.volume);
                 callback();
             });
+        this.service.addCharacteristic(hap.Characteristic.InputDeviceType)
+            .on(CharacteristicEventTypes.GET, (callback: CharacteristicGetCallback) => {
+                log.info("Current source: " + this.source);
+                callback(undefined, this.zone);
+            })
+            .on(CharacteristicEventTypes.SET, (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
+                this.source = value as number;
+                this.ampControl.setSource(this.zone, this.source);
+                log.info("source  was set to: " + this.source);
+                callback();
+            });
         this.informationService = new hap.Service.AccessoryInformation()
             .setCharacteristic(hap.Characteristic.Manufacturer, "Monoprice")
             .setCharacteristic(hap.Characteristic.Model, "6 Channel Amp");
