@@ -17,6 +17,8 @@ export class ZoneAccessory implements AccessoryPlugin {
     private on = false;
     private readonly zone: number;
     private volume = 50;
+    private mute = false;
+    private preMuteVolume = 50;
     private source = 0;
     private sources: String[];
 
@@ -33,7 +35,7 @@ export class ZoneAccessory implements AccessoryPlugin {
         this.sources = sources;
         this.ampControl = ampControl;
 
-        this.service = new hap.Service.Lightbulb(name);
+        this.service = new hap.Service.Speaker(name);
         this.service.getCharacteristic(hap.Characteristic.On)
             .on(CharacteristicEventTypes.GET, (callback: CharacteristicGetCallback) => {
                 // ampControl.getCurrentState(zone, (callback) =>
@@ -50,7 +52,7 @@ export class ZoneAccessory implements AccessoryPlugin {
                 callback();
             });
 
-        this.service.addCharacteristic(hap.Characteristic.Brightness)
+        this.service.addCharacteristic(hap.Characteristic.Volume)
             .on(CharacteristicEventTypes.GET, (callback: CharacteristicGetCallback) => {
                 log.info("Current state of the volume was returned: " + this.volume);
                 callback(undefined, this.volume);
@@ -62,6 +64,24 @@ export class ZoneAccessory implements AccessoryPlugin {
                 callback();
             });
 
+        this.service.addCharacteristic(hap.Characteristic.Mute)
+            .on(CharacteristicEventTypes.GET, (callback: CharacteristicGetCallback) => {
+                log.info("Current state of the mute was returned: " + this.mute);
+                callback(undefined, this.mute);
+            })
+            .on(CharacteristicEventTypes.SET, (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
+                this.mute = value as boolean;
+                if (this.mute) {
+                    this.preMuteVolume = this.volume;
+                    this.volume = 0;
+                    this.ampControl.setVolume(this.zone, 0);
+                } else {
+                    this.volume = this.preMuteVolume;
+                    this.ampControl.setVolume(this.zone, this.volume);
+                }
+                log.info("mute was set to " + this.mute + ", volume set to: " + this.volume);
+                callback();
+            });
         this.informationService = new hap.Service.AccessoryInformation()
             .setCharacteristic(hap.Characteristic.Manufacturer, "Monoprice")
             .setCharacteristic(hap.Characteristic.Model, "6 Channel Amp");
