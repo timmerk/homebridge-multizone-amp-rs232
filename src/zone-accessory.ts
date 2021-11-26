@@ -64,7 +64,7 @@ export class ZoneAccessory implements AccessoryPlugin {
                 callback();
             });
 
-        this.service.addCharacteristic(hap.Characteristic.Mute)
+        this.service.getCharacteristic(hap.Characteristic.Mute)
             .on(CharacteristicEventTypes.GET, (callback: CharacteristicGetCallback) => {
                 log.info("Current state of the mute was returned: " + this.mute);
                 callback(undefined, this.mute);
