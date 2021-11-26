@@ -36,6 +36,7 @@ export class ZoneAccessory implements AccessoryPlugin {
         this.ampControl = ampControl;
 
         this.service = new hap.Service.Speaker(name);
+
         this.service.getCharacteristic(hap.Characteristic.On)
             .on(CharacteristicEventTypes.GET, (callback: CharacteristicGetCallback) => {
                 // ampControl.getCurrentState(zone, (callback) =>
@@ -82,6 +83,7 @@ export class ZoneAccessory implements AccessoryPlugin {
                 log.info("mute was set to " + this.mute + ", volume set to: " + this.volume);
                 callback();
             });
+        
         this.service.addCharacteristic(hap.Characteristic.InputDeviceType)
             .on(CharacteristicEventTypes.GET, (callback: CharacteristicGetCallback) => {
                 log.info("Current source: " + this.source);
