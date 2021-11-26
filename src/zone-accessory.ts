@@ -17,7 +17,7 @@ export class ZoneAccessory implements AccessoryPlugin {
     private on = false;
     private readonly zone: number;
     private volume = 50;
-    private mute = false;
+    private mute = true;
     private preMuteVolume = 50;
     private source = 0;
     private sources: String[];
@@ -37,21 +37,23 @@ export class ZoneAccessory implements AccessoryPlugin {
 
         this.service = new hap.Service.Speaker(name);
 
-        this.service.getCharacteristic(hap.Characteristic.On)
-            .on(CharacteristicEventTypes.GET, (callback: CharacteristicGetCallback) => {
-                // ampControl.getCurrentState(zone, (callback) =>
-                // {
-                log.info("Current state of the switch was returned: " + (this.on ? "ON" : "OFF"));
-                callback(undefined, this.on);
-                // })
-            })
-            .on(CharacteristicEventTypes.SET, (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
-                this.on = value as boolean;
-                ampControl.setZone(this.zone, this.on);
-                ampControl.setVolume(this.zone, this.volume);
-                log.info("Switch state was set to: " + (this.on ? "ON" : "OFF"));
-                callback();
-            });
+        // this.service.getCharacteristic(hap.Characteristic.On)
+        //     .on(CharacteristicEventTypes.GET, (callback: CharacteristicGetCallback) => {
+        //         // ampControl.getCurrentState(zone, (callback) =>
+        //         // {
+        //         log.info("Current state of the switch was returned: " + (this.on ? "ON" : "OFF"));
+        //         callback(undefined, this.on);
+        //         // })
+        //     })
+        //     .on(CharacteristicEventTypes.SET, (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
+        //         this.on = value as boolean;
+        //         ampControl.setZone(this.zone, this.on);
+        //         if (this.on) {
+        //             ampControl.setVolume(this.zone, this.volume);
+        //         }
+        //         log.info("Switch state was set to: " + (this.on ? "ON" : "OFF"));
+        //         callback();
+        //     });
 
         this.service.addCharacteristic(hap.Characteristic.Volume)
             .on(CharacteristicEventTypes.GET, (callback: CharacteristicGetCallback) => {
@@ -83,11 +85,11 @@ export class ZoneAccessory implements AccessoryPlugin {
                 log.info("mute was set to " + this.mute + ", volume set to: " + this.volume);
                 callback();
             });
-        
+
         this.service.addCharacteristic(hap.Characteristic.InputDeviceType)
             .on(CharacteristicEventTypes.GET, (callback: CharacteristicGetCallback) => {
                 log.info("Current source: " + this.source);
-                callback(undefined, this.zone);
+                callback(undefined, this.source);
             })
             .on(CharacteristicEventTypes.SET, (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
                 this.source = value as number;
