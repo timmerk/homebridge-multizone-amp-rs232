@@ -86,7 +86,7 @@ export class ZoneAccessory implements AccessoryPlugin {
                 callback();
             });
 
-        this.service.addCharacteristic(hap.Characteristic.InputDeviceType)
+        this.service.addCharacteristic(hap.Characteristic.InputSourceType)
             .on(CharacteristicEventTypes.GET, (callback: CharacteristicGetCallback) => {
                 log.info("Current source: " + this.source);
                 callback(undefined, this.source);
