@@ -2,17 +2,16 @@
 
 Copyright © 2021 Richard Pack. All rights reserved.
 
-### Introduction
+### Introductions
 This plugin exposes the zones on the Monoprice Multizone 
 Controller/Amplifier as accessories in Homekit through Homebridge.
 
 It supports:
 - Toggling zones on and off
-- Setting the volume of a zone 
-
-Coming soon:
-- Zone source selection
-- Zone muting
+- Setting the volume of a zone
+- Setting the source for a zone
+- All zones On/Off Control
+- The ability to create speaker groups
 
 ### Prerequisites
 
@@ -38,10 +37,18 @@ Coming soon:
   "sources": [
     "sonos",
     "airplay"
-  ]
+  ],
+  "enableMasterControls": true,
+   "groups": [
+      {
+        "name": "Sample 1",
+        "zones": [1, 2, 3, 4]
+      }
+   ]
 }
 ```
-This adds 2 zones and 2 sources (source control still a work in progress).
+This adds 2 zones and 2 sources, with enabling an "All On/Off" Speaker and a All Zones Source control as well as a group 
+speaker control with source control for that group.
 
 ### Disclaimer
 This is a hobby project with no warranty provided or implied whatsoever. 
