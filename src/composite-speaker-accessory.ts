@@ -1,73 +1,76 @@
 import {
     AccessoryPlugin,
+    CharacteristicEventTypes,
     CharacteristicGetCallback,
     CharacteristicSetCallback,
     CharacteristicValue,
     HAP,
     Logging,
-    Service,
-    CharacteristicEventTypes
+    Service
 } from "homebridge";
 import {AmpControl} from "./ampcontrol";
 
-export class ZoneAccessory implements AccessoryPlugin {
+export class CompositeSpeakerAccessory implements AccessoryPlugin {
 
     private readonly log: Logging;
 
     private on = false;
-    private readonly zone: number;
     private volume = 50;
-    private mute = true;
+    private mute = false;
     private preMuteVolume = 50;
-    private source = 0;
-    private sources: String[];
 
     name: string;
 
     private readonly service: Service;
     private readonly informationService: Service;
-    private ampControl: AmpControl;
+    private readonly ampControl: AmpControl;
+    private readonly zoneNumbers: number[];
 
-    constructor(hap: HAP, log: Logging, ampControl: AmpControl, sources: String[], name: string, zone: number) {
+    constructor(hap: HAP, log: Logging, ampControl: AmpControl, name: string, zoneNumbers: number[]) {
+        this.zoneNumbers = zoneNumbers;
         this.log = log;
         this.name = name;
-        this.zone = zone;
-        this.sources = sources;
+        this.zoneNumbers = zoneNumbers;
         this.ampControl = ampControl;
 
-        this.service = new hap.Service.Speaker(name);
+        this.service = new hap.Service.Lightbulb(name);
 
-        // this.service.getCharacteristic(hap.Characteristic.On)
-        //     .on(CharacteristicEventTypes.GET, (callback: CharacteristicGetCallback) => {
-        //         // ampControl.getCurrentState(zone, (callback) =>
-        //         // {
-        //         log.info("Current state of the switch was returned: " + (this.on ? "ON" : "OFF"));
-        //         callback(undefined, this.on);
-        //         // })
-        //     })
-        //     .on(CharacteristicEventTypes.SET, (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
-        //         this.on = value as boolean;
-        //         ampControl.setZone(this.zone, this.on);
-        //         if (this.on) {
-        //             ampControl.setVolume(this.zone, this.volume);
-        //         }
-        //         log.info("Switch state was set to: " + (this.on ? "ON" : "OFF"));
-        //         callback();
-        //     });
+        this.service.getCharacteristic(hap.Characteristic.On)
+            .on(CharacteristicEventTypes.GET, (callback: CharacteristicGetCallback) => {
+                log.info("Current state of the switch was returned: " + (this.on ? "ON" : "OFF"));
+                callback(undefined, this.on);
+            })
+            .on(CharacteristicEventTypes.SET, (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
+                this.on = value as boolean;
+                if (this.on) {
+                    for (let i = 0; i < this.zoneNumbers.length; i++) {
+                        ampControl.setZone(this.zoneNumbers[i], this.on);
+                        ampControl.setVolume(this.zoneNumbers[i], this.volume);
+                    }
+                } else {
+                    for (let i = 0; i < this.zoneNumbers.length; i++) {
+                        ampControl.setZone(this.zoneNumbers[i], this.on);
+                    }
+                }
+                log.info("Active state was set to: " + (this.on ? "ON" : "OFF"));
+                callback();
+            });
 
-        this.service.addCharacteristic(hap.Characteristic.Volume)
+        this.service.addCharacteristic(hap.Characteristic.Brightness)
             .on(CharacteristicEventTypes.GET, (callback: CharacteristicGetCallback) => {
                 log.info("Current state of the volume was returned: " + this.volume);
                 callback(undefined, this.volume);
             })
             .on(CharacteristicEventTypes.SET, (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
                 this.volume = value as number;
-                this.ampControl.setVolume(this.zone, this.volume);
+                for (let i = 0; i < this.zoneNumbers.length; i++) {
+                    ampControl.setVolume(this.zoneNumbers[i], this.volume);
+                }
                 log.info("volume state was set to: " + this.volume);
                 callback();
             });
 
-        this.service.getCharacteristic(hap.Characteristic.Mute)
+        this.service.addCharacteristic(hap.Characteristic.Mute)
             .on(CharacteristicEventTypes.GET, (callback: CharacteristicGetCallback) => {
                 log.info("Current state of the mute was returned: " + this.mute);
                 callback(undefined, this.mute);
@@ -77,26 +80,19 @@ export class ZoneAccessory implements AccessoryPlugin {
                 if (this.mute) {
                     this.preMuteVolume = this.volume;
                     this.volume = 0;
-                    this.ampControl.setVolume(this.zone, 0);
+                    for (let i = 0; i < this.zoneNumbers.length; i++) {
+                        ampControl.setVolume(this.zoneNumbers[i], 0);
+                    }
                 } else {
                     this.volume = this.preMuteVolume;
-                    this.ampControl.setVolume(this.zone, this.volume);
+                    for (let i = 0; i < this.zoneNumbers.length; i++) {
+                        ampControl.setVolume(this.zoneNumbers[i], this.volume);
+                    }
                 }
                 log.info("mute was set to " + this.mute + ", volume set to: " + this.volume);
                 callback();
             });
 
-        this.service.addCharacteristic(hap.Characteristic.InputSourceType)
-            .on(CharacteristicEventTypes.GET, (callback: CharacteristicGetCallback) => {
-                log.info("Current source: " + this.source);
-                callback(undefined, this.source);
-            })
-            .on(CharacteristicEventTypes.SET, (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
-                this.source = value as number;
-                this.ampControl.setSource(this.zone, this.source);
-                log.info("source  was set to: " + this.source);
-                callback();
-            });
         this.informationService = new hap.Service.AccessoryInformation()
             .setCharacteristic(hap.Characteristic.Manufacturer, "Monoprice")
             .setCharacteristic(hap.Characteristic.Model, "6 Channel Amp");
