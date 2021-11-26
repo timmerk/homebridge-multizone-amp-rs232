@@ -1,7 +1,7 @@
 {
   "name": "homebridge-monoprice-amp",
   "displayName": "Monoprice Multizone Amplifier",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "",
   "author": "Richard Pack",
   "license": "Apache 2.0",
