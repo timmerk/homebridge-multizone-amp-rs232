@@ -16,7 +16,7 @@ It supports:
 ### Prerequisites
 
 - Monoprice 6 Zone Home Audio Multizone Controller
-- iTachFlexIp for IP control of the amplifier over RS232
+- RS232 port, either built-in or via a USB-serial adapter
 - Homebridge
 
 ### Example Config
