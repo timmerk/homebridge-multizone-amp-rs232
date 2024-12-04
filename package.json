@@ -1,7 +1,7 @@
 {
-  "name": "homebridge-monoprice-amp",
-  "displayName": "Monoprice Multizone Amplifier",
-  "version": "1.0.9",
+  "name": "homebridge-monoprice-amp-rs232",
+  "displayName": "Monoprice Multizone Amplifier RS232",
+  "version": "1.0.11",
   "description": "",
   "author": "Richard Pack",
   "license": "Apache 2.0",
@@ -25,22 +25,21 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git://github.com/richardpack/homebridge-multizone-amp.git"
+    "url": "git://github.com/timmerk/homebridge-multizone-amp-rs232.git"
   },
   "bugs": {
-    "url": "https://github.com/richardpack/homebridge-multizone-amp/issues"
+    "url": "https://github.com/timmerk/homebridge-multizone-amp-rs232/issues"
   },
   "devDependencies": {
     "@types/jest": "^26.0.24",
     "@types/node": "^16.6.1",
-    "axios": ">=0.21.2",
+    "ansi-regex": ">=5.0.1",
     "homebridge": "^1.0.4",
     "jest": "^27.0.6",
     "rimraf": "^3.0.2",
+    "serialport": "^12.0.0",
+    "tmpl": ">=1.0.5",
     "ts-jest": "^27.0.4",
-    "typescript": "^4.3.5",
-    "ansi-regex": ">=5.0.1",
-    "tmpl": ">=1.0.5"
-  },
-  "dependencies": {}
+    "typescript": "^4.3.5"
+  }
 }

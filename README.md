@@ -22,8 +22,8 @@ It supports:
 ### Example Config
 ```
 {
-  "platform": "MonopriceAmp",
-  "itachFlexIp": "192.168.1.1", //itachflex ip address
+  "platform": "MonopriceAmpRS232",
+  "serialPortPath": "/dev/usbserial1",
   "zones": [
     {
       "name": "Zone 1",

@@ -1,7 +1,5 @@
-import {Logging} from "homebridge";
-import * as net from 'net';
-
-const serverPort = 4999;
+import { Logging } from "homebridge";
+import { SerialPort } from "serialport";
 
 /*
     Command details from https://downloads.monoprice.com/files/manuals/10761_Manual_131209.pdf
@@ -22,59 +20,55 @@ const serverPort = 4999;
         Inquiry response format: ?xxaabbccddeeffgghhiijj'CR'
 
  */
-
 export class AmpControl {
-    private readonly itachFlexIp: string;
+    private readonly serialPortPath: string;
     private log: Logging;
-    private serverController: net.Socket;
+    private serialController: SerialPort;
 
-    constructor(itachFlexIp: string, log: Logging) {
-        this.itachFlexIp = itachFlexIp;
+    constructor(serialPortPath: string, log: Logging) {
+        this.serialPortPath = serialPortPath;
         this.log = log;
-        this.serverController = new net.Socket();
-        this.serverController.setEncoding("ascii");
-        this.serverController.on('data', this.serverControllerDataCallback.bind(this));
+        this.serialController = new SerialPort({
+            path: this.serialPortPath,
+            baudRate: 9600,
+            autoOpen: false
+        });
+
+        this.serialController.on("open", () => {
+            this.log.info("Serial port connection established");
+        });
+
+        this.serialController.on("data", this.serialControllerDataCallback.bind(this));
+        this.serialController.on("error", (error) => {
+            this.log.error("Serial port error:", error.message);
+        });
+
         this.establishConnection();
     }
 
-    /**
-     *
-     * @param zoneNum number 1-18
-     * @param sourceNum number 1-6
-     */
-    setSource(zoneNum: number, sourceNum: number): String {
-        let source = sourceNum.toString();
-        if (source.length === 1) source = '0' + source;
+    setSource(zoneNum: number, sourceNum: number): string {
+        let source = sourceNum.toString().padStart(2, '0');
         const zone = this.getZoneMapping(zoneNum);
         const cmd = this.getCommandStr(zone, 'CH', source);
-        this.log.info('setting source ' + cmd);
+        this.log.info('Setting source ' + cmd);
         this.sendCommandToAmp(cmd);
         return cmd;
     }
 
-    /**
-     * @param zoneNum number 0-18
-     * @param volLevel number 0-100
-     */
-    setVolume(zoneNum: number, volLevel: number): String {
+    setVolume(zoneNum: number, volLevel: number): string {
         volLevel = Math.round(volLevel / 2.64);
-        let vol = volLevel.toString();
-        if (vol.length === 1) vol = '0' + vol;
+        let vol = volLevel.toString().padStart(2, '0');
         const zone = this.getZoneMapping(zoneNum);
         const cmd = this.getCommandStr(zone, 'VO', vol);
-        this.log.info('setting volume ' + cmd);
+        this.log.info('Setting volume ' + cmd);
         this.sendCommandToAmp(cmd);
         return cmd;
     }
 
-    /**
-     * @param zoneNum number 0 - 18
-     * @param state either 'on' or 'off'
-     */
-    setZone(zoneNum: number, state: boolean): String {
+    setZone(zoneNum: number, state: boolean): string {
         const zone = this.getZoneMapping(zoneNum);
-        const cmd = this.getCommandStr(zone, 'PR', (state ? '01' : '00'));
-        this.log.info('setting zone ' + cmd);
+        const cmd = this.getCommandStr(zone, 'PR', state ? '01' : '00');
+        this.log.info('Setting zone ' + cmd);
         this.sendCommandToAmp(cmd);
         return cmd;
     }
@@ -93,45 +87,25 @@ export class AmpControl {
             return "3" + (zoneNumber - 12).toString();
     }
 
-    //todo implement get current state
-
     sendCommandToAmp(cmd: string) {
-        this.viaSocket(cmd);
+        this.log.info("Writing message to controller: " + cmd);
+        this.serialController.write(cmd + '\r', "ascii", (err) => {
+            if (err) {
+                this.log.error("Failed to send command:", err.message);
+            }
+        });
     }
 
-    viaSocket(cmd: string) {
-        this.log.info("writing message to controller: " + cmd);
-        this.serverController.write(cmd + '\r', "ascii");
-    }
-
-    // viaHttp(cmd: String) {
-    //     const axios = require('axios');
-    //     const url = 'http://' + this.itachFlexIp + '/api/host/modules/1/ports/1/data' + "";
-    //     this.log.debug("using url " + url)
-    //     axios.post(url, {
-    //
-    //         headers: {
-    //             'Content-Type': 'application/json',
-    //             'Content-Length': cmd.length
-    //         },
-    //         data: cmd
-    //     })
-    //         .then(function (response: any) {
-    //             console.log(response);
-    //         })
-    //         .catch(function (error: any) {
-    //             console.error(error);
-    //         });
-    // }
-
-    serverControllerDataCallback(data: Buffer) {
-        this.log.info(data.toString());
-        // this.serverController.end();
+    private serialControllerDataCallback(data: Buffer) {
+        this.log.info("Received data from controller: " + data.toString());
     }
 
     private establishConnection() {
-        this.log.info("connecting to controller");
-        this.serverController.connect({host: this.itachFlexIp, port: serverPort});
+        this.log.info("Opening serial port...");
+        this.serialController.open((err) => {
+            if (err) {
+                this.log.error("Failed to open serial port:", err.message);
+            }
+        });
     }
 }
-

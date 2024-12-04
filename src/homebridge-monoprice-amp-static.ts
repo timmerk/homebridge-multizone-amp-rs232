@@ -11,10 +11,10 @@ let hap: HAP;
 
 export = (api: API) => {
     hap = api.hap;
-    api.registerPlatform(PLATFORM_NAME, MonopriceAmpPlatform);
+    api.registerPlatform(PLATFORM_NAME, MonopriceAmpRS232Platform);
 };
 
-class MonopriceAmpPlatform implements StaticPlatformPlugin {
+class MonopriceAmpRS232Platform implements StaticPlatformPlugin {
 
     private readonly log: Logging;
     private readonly config: PlatformConfig;
@@ -28,9 +28,9 @@ class MonopriceAmpPlatform implements StaticPlatformPlugin {
         this.log.debug('Finished initializing platform:', this.config.name);
         this.hap = api.hap;
 
-        if (config['itachFlexIp'] === undefined) log.error("missing config value 'itachFlexIp'")
-        this.ampControl = new AmpControl(config['itachFlexIp'], this.log);
-        this.log.info(PLATFORM_NAME + " finished initializing v1.0.7a!");
+        if (config['serialPortPath'] === undefined) log.error("missing config value 'serialPortPath'")
+        this.ampControl = new AmpControl(config['serialPortPath'], this.log);
+        this.log.info(PLATFORM_NAME + " finished initializing!");
     }
 
     accessories(callback: (foundAccessories: AccessoryPlugin[]) => void): void {
