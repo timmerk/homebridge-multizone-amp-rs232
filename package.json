@@ -30,16 +30,18 @@
   "bugs": {
     "url": "https://github.com/timmerk/homebridge-multizone-amp-rs232/issues"
   },
-  "dependencies": {
+  "devDependencies": {
     "@types/jest": "^26.0.24",
     "@types/node": "^16.6.1",
     "ansi-regex": ">=5.0.1",
     "homebridge": "^1.0.4",
     "jest": "^27.0.6",
     "rimraf": "^3.0.2",
-    "serialport": "^12.0.0",
     "tmpl": ">=1.0.5",
     "ts-jest": "^27.0.4",
     "typescript": "^4.3.5"
+  },
+  "dependencies": {
+    "serialport": "^12.0.0"
   }
 }
